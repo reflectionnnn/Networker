@@ -3,11 +3,21 @@
 registry = "test"
 
 [[package]]
-name = "reflectionnnn/networker"
-version = "0.1.8"
-dependencies = [["Trove", "sleitnick/trove@1.5.1"]]
+name = "evaera/promise"
+version = "4.0.0"
+dependencies = []
 
 [[package]]
-name = "sleitnick/trove"
-version = "1.5.1"
-dependencies = []
+name = "howmanysmall/janitor"
+version = "1.18.3"
+dependencies = [["Promise", "howmanysmall/typed-promise@4.0.6"]]
+
+[[package]]
+name = "howmanysmall/typed-promise"
+version = "4.0.6"
+dependencies = [["Promise", "evaera/promise@4.0.0"]]
+
+[[package]]
+name = "reflectionnnn/networker"
+version = "1.0.0"
+dependencies = [["Janitor", "howmanysmall/janitor@1.18.3"]]

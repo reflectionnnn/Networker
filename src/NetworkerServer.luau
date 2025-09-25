@@ -12,14 +12,14 @@ local Players = game:GetService("Players")
 
 --<Dependencies>--
 
-local Trove = require(script.Parent.Parent.Trove)
+local Janitor = require(script.Parent.Parent.Janitor)
 local NetworkerUtils = require(script.Parent.NetworkerUtils)
 local GlobalRemoteContainer = NetworkerUtils.GetRemoteContainer()
 
 --<Types>--
 
 type PlayerGroup = { Player }
-type Trove = typeof(Trove.new())
+type Janitor = typeof(Janitor.new())
 
 --<Module>--
 
@@ -28,7 +28,7 @@ NetworkerServer.__index = NetworkerServer
 
 export type NetworkerServer = typeof(setmetatable({} :: {
 	
-	_trove: Trove,
+	_janitor: Janitor,
 	_tag: string,
 	_module: any,
 
@@ -48,14 +48,14 @@ function NetworkerServer.new(tag: string, module: any): NetworkerServer
 	assert(GlobalRemoteContainer:FindFirstChild(tag) == nil, ERROR_TAG_ALREADY_EXIST)
 
 	local self = setmetatable({}, NetworkerServer) :: NetworkerServer
-	self._trove = Trove.new()
+	self._janitor = Janitor.new()
 
 	self._tag = tag
 	self._clientAccess = {}
 
 	self._module = module
 
-	self._container = self._trove:Add(Instance.new("Folder"))
+	self._container = self._janitor:Add(Instance.new("Folder"))
 	self._container.Name = tag
 	self._container.Parent = GlobalRemoteContainer
 
@@ -172,7 +172,7 @@ end
 --<Destroy>--
 
 function NetworkerServer.Destroy(self: NetworkerServer): ()
-	self._trove:Destroy()
+	self._janitor:Destroy()
 	setmetatable(self :: any, nil)
 	table.clear(self :: any)
 end

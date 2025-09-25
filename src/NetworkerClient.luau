@@ -6,18 +6,18 @@ local CONTAINER_WAIT_TIMEOUT = 5
 
 local RunService = game:GetService("RunService")
 
-local Trove = require(script.Parent.Parent.Trove)
+local Janitor = require(script.Parent.Parent.Janitor)
 local NetworkerUtils = require(script.Parent.NetworkerUtils)
 local GlobalRemoteContainer = NetworkerUtils.GetRemoteContainer()
 
-type Trove = typeof(Trove.new())
+type Janitor = typeof(Janitor.new())
 
 local NetworkerClient = {}
 NetworkerClient.__index = NetworkerClient
 
 export type NetworkerClient = typeof(setmetatable({} :: {
 	
-	_trove: Trove,
+	_janitor: Janitor,
 	_tag: string,
 	_module: any,
 
@@ -33,7 +33,7 @@ function NetworkerClient.new(tag: string, module: any): NetworkerClient
 	assert(RunService:IsClient(), ERROR_ATTEMPT_SERVER_CONSTRUCT)
 	
 	local self = setmetatable({}, NetworkerClient) :: NetworkerClient
-	self._trove = Trove.new()
+	self._janitor = Janitor.new()
 
 	self._tag = tag
 	self._module = module
@@ -45,11 +45,11 @@ function NetworkerClient.new(tag: string, module: any): NetworkerClient
 	self._unreliableRemoteEvent = self._container:WaitForChild("UnreliableRemoteEvent") :: UnreliableRemoteEvent
 	self._remoteFunction = self._container:WaitForChild("RemoteFunction") :: RemoteFunction
 
-	self._trove:Add(self._remoteEvent.OnClientEvent:Connect(function(...: any)
+	self._janitor:Add(self._remoteEvent.OnClientEvent:Connect(function(...: any)
 		self:_callback(...)
 	end))
 
-	self._trove:Add(self._unreliableRemoteEvent.OnClientEvent:Connect(function(...: any)
+	self._janitor:Add(self._unreliableRemoteEvent.OnClientEvent:Connect(function(...: any)
 		self:_callback(...)
 	end))
 
@@ -57,7 +57,7 @@ function NetworkerClient.new(tag: string, module: any): NetworkerClient
 		return self:_callback(...)
 	end
 
-	self._trove:Add(function()
+	self._janitor:Add(function()
 		self._remoteFunction.OnClientInvoke = function()
 			return
 		end
@@ -109,7 +109,7 @@ function NetworkerClient.Get(self: NetworkerClient, key: any): any?
 end
 
 function NetworkerClient.Destroy(self: NetworkerClient): ()
-	self._trove:Destroy()
+	self._janitor:Destroy()
 	setmetatable(self :: any, nil)
 	table.clear(self :: any)
 end
