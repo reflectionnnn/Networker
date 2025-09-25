@@ -1,7 +1,5 @@
 --!strict
 
---<Constants>--
-
 local CONTAINER_NAME = "NetworkerContainer"
 
 local TAGS = {
@@ -10,16 +8,10 @@ local TAGS = {
 	GET = "Get"
 }
 
---<Services>--
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
---<Variables>--
-
 local RemoteContainer: Folder? = nil
-
---<Functions>--
 
 local function GetRemoteContainer(): Folder
 		if RunService:IsClient() then
@@ -37,8 +29,6 @@ local function GetRemoteContainer(): Folder
 		return RemoteContainer
 	end
 end
-
---<Main>--
 
 return {
 	GetRemoteContainer = GetRemoteContainer,

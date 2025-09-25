@@ -1,34 +1,23 @@
 --!strict
 
---<Constants>--
-
 local ERROR_ATTEMPT_SERVER_CONSTRUCT = "Attempt to construct client networker from server"
 local ERROR_MISSING_CONTAINER = "Missing networker container, make sure server networker by that tag exist"
 local CONTAINER_WAIT_TIMEOUT = 5
 
---<Services>--
-
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
---<Dependencies>--
-
-local Janitor = require(ReplicatedStorage.Packages.Janitor)
+local Trove = require(script.Parent.Parent.Trove)
 local NetworkerUtils = require(script.Parent.NetworkerUtils)
 local GlobalRemoteContainer = NetworkerUtils.GetRemoteContainer()
 
---<Types>--
-
-type Janitor = Janitor.Janitor
-
---<Module>--
+type Trove = typeof(Trove.new())
 
 local NetworkerClient = {}
 NetworkerClient.__index = NetworkerClient
 
 export type NetworkerClient = typeof(setmetatable({} :: {
 	
-	_janitor: Janitor,
+	_trove: Trove,
 	_tag: string,
 	_module: any,
 
@@ -40,13 +29,11 @@ export type NetworkerClient = typeof(setmetatable({} :: {
 	
 }, NetworkerClient))
 
---<Constructor>--
-
 function NetworkerClient.new(tag: string, module: any): NetworkerClient
 	assert(RunService:IsClient(), ERROR_ATTEMPT_SERVER_CONSTRUCT)
 	
 	local self = setmetatable({}, NetworkerClient) :: NetworkerClient
-	self._janitor = Janitor.new()
+	self._trove = Trove.new()
 
 	self._tag = tag
 	self._module = module
@@ -58,11 +45,11 @@ function NetworkerClient.new(tag: string, module: any): NetworkerClient
 	self._unreliableRemoteEvent = self._container:WaitForChild("UnreliableRemoteEvent") :: UnreliableRemoteEvent
 	self._remoteFunction = self._container:WaitForChild("RemoteFunction") :: RemoteFunction
 
-	self._janitor:Add(self._remoteEvent.OnClientEvent:Connect(function(...: any)
+	self._trove:Add(self._remoteEvent.OnClientEvent:Connect(function(...: any)
 		self:_callback(...)
 	end))
 
-	self._janitor:Add(self._unreliableRemoteEvent.OnClientEvent:Connect(function(...: any)
+	self._trove:Add(self._unreliableRemoteEvent.OnClientEvent:Connect(function(...: any)
 		self:_callback(...)
 	end))
 
@@ -70,7 +57,7 @@ function NetworkerClient.new(tag: string, module: any): NetworkerClient
 		return self:_callback(...)
 	end
 
-	self._janitor:Add(function()
+	self._trove:Add(function()
 		self._remoteFunction.OnClientInvoke = function()
 			return
 		end
@@ -78,8 +65,6 @@ function NetworkerClient.new(tag: string, module: any): NetworkerClient
 
 	return self
 end
-
---<Private Methods>--
 
 function NetworkerClient._callback(self: NetworkerClient, tag: string, ...: any): ...any?
 	if tag == NetworkerUtils.TAGS.METHOD then
@@ -107,8 +92,6 @@ function NetworkerClient._getCallback(self: NetworkerClient, key: any): any?
 	return self._module[key]
 end
 
---<Public Methods>--
-
 function NetworkerClient.FireMethod(self: NetworkerClient, methodName: string, ...: any?): ()
 	self._remoteEvent:FireServer(NetworkerUtils.TAGS.METHOD, methodName, ...)
 end
@@ -125,14 +108,10 @@ function NetworkerClient.Get(self: NetworkerClient, key: any): any?
 	return self._remoteFunction:InvokeServer(NetworkerUtils.TAGS.GET, key)
 end
 
---<Destroy>--
-
 function NetworkerClient.Destroy(self: NetworkerClient): ()
-	self._janitor:Destroy()
+	self._trove:Destroy()
 	setmetatable(self :: any, nil)
 	table.clear(self :: any)
 end
-
---<Main>--
 
 return NetworkerClient
