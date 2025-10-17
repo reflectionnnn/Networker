@@ -1,47 +1,36 @@
 --!strict
 
---<Constants>--
-
 local ERROR_ATTEMPT_CLIENT_CONSTRUCT = "Attempt to construct server networker from client"
 local ERROR_TAG_ALREADY_EXIST = "Attempt to construct server networker with already existing tag"
 
---<Services>--
-
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
-
---<Dependencies>--
 
 local Janitor = require(script.Parent.Parent.Janitor)
 local NetworkerUtils = require(script.Parent.NetworkerUtils)
 local GlobalRemoteContainer = NetworkerUtils.GetRemoteContainer()
 
---<Types>--
-
 type PlayerGroup = { Player }
 type Janitor = typeof(Janitor.new())
-
---<Module>--
 
 local NetworkerServer = {}
 NetworkerServer.__index = NetworkerServer
 
-export type NetworkerServer = typeof(setmetatable({} :: {
-	
-	_janitor: Janitor,
-	_tag: string,
-	_module: any,
+export type NetworkerServer = typeof(setmetatable(
+	{} :: {
+		_janitor: Janitor,
+		_tag: string,
+		_module: any,
 
-	_clientAccess: { [string]: boolean },
-	_container: Folder,
+		_clientAccess: { [string]: boolean },
+		_container: Folder,
 
-	_remoteEvent: RemoteEvent,
-	_remoteFunction: RemoteFunction,
-	_unreliableRemoteEvent: UnreliableRemoteEvent
-	
-}, NetworkerServer))
-
---<Constructor>--
+		_remoteEvent: RemoteEvent,
+		_remoteFunction: RemoteFunction,
+		_unreliableRemoteEvent: UnreliableRemoteEvent,
+	},
+	NetworkerServer
+))
 
 function NetworkerServer.new(tag: string, module: any): NetworkerServer
 	assert(RunService:IsServer(), ERROR_ATTEMPT_CLIENT_CONSTRUCT)
@@ -82,8 +71,6 @@ function NetworkerServer.new(tag: string, module: any): NetworkerServer
 	return self
 end
 
---<Private Methods>--
-
 function NetworkerServer._callback(self: NetworkerServer, player: Player, tag: string, ...: any): ...any?
 	if tag == NetworkerUtils.TAGS.METHOD then
 		return self:_methodCallback(player, ...)
@@ -112,8 +99,6 @@ function NetworkerServer._getCallback(self: NetworkerServer, key: any): any?
 	end
 end
 
---<Public Methods>--
-
 function NetworkerServer.AddClientAccess(self: NetworkerServer, keys: { string }): ()
 	for _, key in keys do
 		if self._clientAccess[key] then
@@ -125,11 +110,11 @@ function NetworkerServer.AddClientAccess(self: NetworkerServer, keys: { string }
 	end
 end
 
-function NetworkerServer.FireMethod(self: NetworkerServer, player: Player, methodName: string,  ...: any?): ()
+function NetworkerServer.FireMethod(self: NetworkerServer, player: Player, methodName: string, ...: any?): ()
 	self._remoteEvent:FireClient(player, NetworkerUtils.TAGS.METHOD, methodName, ...)
 end
 
-function NetworkerServer.FireMethodUnreliable(self: NetworkerServer, player: Player, methodName: string,  ...: any?): ()
+function NetworkerServer.FireMethodUnreliable(self: NetworkerServer, player: Player, methodName: string, ...: any?): ()
 	self._unreliableRemoteEvent:FireClient(player, NetworkerUtils.TAGS.METHOD, methodName, ...)
 end
 
@@ -141,7 +126,12 @@ function NetworkerServer.FireMethodAllUnreliable(self: NetworkerServer, methodNa
 	self._unreliableRemoteEvent:FireAllClients(NetworkerUtils.TAGS.METHOD, methodName, ...)
 end
 
-function NetworkerServer.FireMethodAllExcept(self: NetworkerServer, except: PlayerGroup, methodName: string, ...: any?): ()
+function NetworkerServer.FireMethodAllExcept(
+	self: NetworkerServer,
+	except: PlayerGroup,
+	methodName: string,
+	...: any?
+): ()
 	for _, player in Players:GetPlayers() do
 		if not table.find(except, player) then
 			self._remoteEvent:FireClient(player, NetworkerUtils.TAGS.METHOD, methodName, ...)
@@ -149,7 +139,12 @@ function NetworkerServer.FireMethodAllExcept(self: NetworkerServer, except: Play
 	end
 end
 
-function NetworkerServer.FireMethodAllExceptUnreliable(self: NetworkerServer, except: PlayerGroup, methodName: string, ...: any?): ()
+function NetworkerServer.FireMethodAllExceptUnreliable(
+	self: NetworkerServer,
+	except: PlayerGroup,
+	methodName: string,
+	...: any?
+): ()
 	for _, player in Players:GetPlayers() do
 		if not table.find(except, player) then
 			self._unreliableRemoteEvent:FireClient(player, NetworkerUtils.TAGS.METHOD, methodName, ...)
@@ -169,14 +164,10 @@ function NetworkerServer.Get(self: NetworkerServer, player: Player, key: any): a
 	return self._remoteFunction:InvokeClient(player, NetworkerUtils.TAGS.GET, key)
 end
 
---<Destroy>--
-
 function NetworkerServer.Destroy(self: NetworkerServer): ()
 	self._janitor:Destroy()
 	setmetatable(self :: any, nil)
 	table.clear(self :: any)
 end
-
---<Main>--
 
 return NetworkerServer

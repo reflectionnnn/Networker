@@ -15,31 +15,32 @@ type Janitor = typeof(Janitor.new())
 local NetworkerClient = {}
 NetworkerClient.__index = NetworkerClient
 
-export type NetworkerClient = typeof(setmetatable({} :: {
-	
-	_janitor: Janitor,
-	_tag: string,
-	_module: any,
+export type NetworkerClient = typeof(setmetatable(
+	{} :: {
+		_janitor: Janitor,
+		_tag: string,
+		_module: any,
 
-	_container: Folder,
+		_container: Folder,
 
-	_remoteEvent: RemoteEvent,
-	_unreliableRemoteEvent: UnreliableRemoteEvent,
-	_remoteFunction: RemoteFunction
-	
-}, NetworkerClient))
+		_remoteEvent: RemoteEvent,
+		_unreliableRemoteEvent: UnreliableRemoteEvent,
+		_remoteFunction: RemoteFunction,
+	},
+	NetworkerClient
+))
 
 function NetworkerClient.new(tag: string, module: any): NetworkerClient
 	assert(RunService:IsClient(), ERROR_ATTEMPT_SERVER_CONSTRUCT)
-	
+
 	local self = setmetatable({}, NetworkerClient) :: NetworkerClient
 	self._janitor = Janitor.new()
 
 	self._tag = tag
 	self._module = module
 
-	self._container = GlobalRemoteContainer:WaitForChild(tag, CONTAINER_WAIT_TIMEOUT) :: Folder
-	assert(self._container, ERROR_MISSING_CONTAINER)
+	self._container =
+		assert(GlobalRemoteContainer:WaitForChild(tag, CONTAINER_WAIT_TIMEOUT) :: Folder, ERROR_MISSING_CONTAINER)
 
 	self._remoteEvent = self._container:WaitForChild("RemoteEvent") :: RemoteEvent
 	self._unreliableRemoteEvent = self._container:WaitForChild("UnreliableRemoteEvent") :: UnreliableRemoteEvent
